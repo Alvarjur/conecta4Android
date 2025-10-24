@@ -4,26 +4,42 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.ImageButton
 import android.widget.ImageView
+import android.widget.TableLayout
+import android.widget.TableRow
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import android.widget.TableLayout
-import android.widget.TableRow
-import org.java_websocket.client.WebSocketClient
-import org.java_websocket.handshake.Handshakedata
-import org.java_websocket.handshake.ServerHandshake
-import java.lang.Exception
-import java.net.URI
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import org.java_websocket.WebSocket
 import kotlinx.serialization.json.*
+import org.java_websocket.WebSocket
+import java.net.URI
+import androidx.lifecycle.Observer
+import java.util.concurrent.ExecutorService
 
 
-class MainActivity : AppCompatActivity() {
-    var curPlayer = 1
+class GameActivity : AppCompatActivity() {
+
+    companion object {
+        var grid = mutableListOf<String>()
+        var listFields = ArrayList<ArrayList<Field>>()
+        var player = 2
+        var curPlayer = 1
+        var winner = "none"
+
+        fun updateGrid() {
+            for(chip in grid) {
+                var parts = chip.replace("\"", "").replace("[", "").replace("]", "").split(" ")
+                Log.d("PARTS", parts.toString())
+                var field = listFields[parts[0].toInt()][parts[1].toInt()]
+                field.player = parts[2].toInt()
+                field.updateIv()
+
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -33,12 +49,18 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-        connectaWS()
+
+
+
+        // Observe LiveData from WebSocketManager
+        WebSocketManager.messages.observe(this, Observer { msg ->
+            Log.d("WSM", msg)
+        })
         val tableLayout = findViewById<TableLayout>(R.id.tableLayout)
 
         val numRows = 6
         val numCols = 7
-        var listFields = ArrayList<ArrayList<Field>>()
+
 
 
         // Creando los botones para añadir las fichas
@@ -61,12 +83,17 @@ class MainActivity : AppCompatActivity() {
 
             btn.setOnClickListener {
                 for(j in numCols - 2 downTo 0) {
-                    if(listFields.get(j).get(i).player == 0) {
-                        listFields.get(j).get(i).player = curPlayer
-                        listFields.get(j).get(i).updateIv()
-                        switchPlayer()
-                        break
+                    if(winner == "\"none\"") {
+                        if (curPlayer == player) {
+                            if (listFields.get(j).get(i).player == 0) {
+                                WebSocketManager.sendAddChipMessage(i)
+                                listFields.get(j).get(i).player = curPlayer
+                                listFields.get(j).get(i).updateIv()
 
+                                break
+                            }
+
+                        }
                     }
                 }
             }
@@ -89,6 +116,7 @@ class MainActivity : AppCompatActivity() {
             var row_fields = ArrayList<Field>()
             for(j in 0 until numCols) {
                 var iv = ImageView(this)
+                iv.setImageResource(R.drawable.chip_blank)
                 iv.apply { layoutParams =  TableRow.LayoutParams(
                     0,
                     TableRow.LayoutParams.WRAP_CONTENT,
@@ -107,84 +135,15 @@ class MainActivity : AppCompatActivity() {
 
         }
 
+        fun updateGrid() {
+            for(chip in grid) {
+                var parts = chip.split(" ")
+                Log.d("PARTS", parts.toString())
 
-    }
-    fun switchPlayer()
-    {
-        if (curPlayer == 1)
-        {
-            curPlayer = 2
-        }
-        else
-        {
-            curPlayer = 1
-        }
-    }
-
-    class MyWebSocketClient(serverUri: URI) : WebSocketClient(serverUri) {
-        override fun onOpen(handshakedata: ServerHandshake?) {
-            Log.d("CONNECTION", "Connected")
-
-            val message = ChatMessage("register", "KotlinClient", "Hi")
-            val json = Json.encodeToString(message)
-
-            send(Json.encodeToString(message))
-
-        }
-
-        override fun onMessage(message: String?) {
-            Log.d("CONNECTION", "Message received: " + message)
-            message?.isEmpty()?.let {
-                if(!it) {
-                    val jsonElement = Json.parseToJsonElement(message)
-                    if (jsonElement is JsonObject) {
-                        val jsonObject = jsonElement
-                        var type = jsonObject["type"]?.jsonPrimitive?.contentOrNull
-
-                        // Aquí se harán cosas dependiendo del tipo de mensaje que llegue
-                        if (type.equals("challenge")) {
-                            var challenger = jsonObject["challenger"]?.jsonPrimitive?.contentOrNull
-                            Log.d("CONNECTION", "Challenger: " + challenger)
-                        }
-
-
-                    }
-                }
             }
         }
-
-        override fun onClose(code: Int, reason: String?, remote: Boolean) {
-            Log.d("CONNECTION", "Closed connection")
-        }
-
-        override fun onError(ex: Exception?) {
-            Log.d("CONNECTION", "Error")
-        }
     }
 
-    fun connectaWS() {
-        val uri = URI("ws://10.0.2.2:3000")
-        var wsclient = MyWebSocketClient(uri)
-        wsclient.connect()
-    }
-
-    @Serializable
-    data class ChatMessage(
-        val type: String,
-        val clientName: String,
-        val message: String
-    )
-
-    fun sendJsonMessage(webSocket: WebSocket) {
-        val chatMessage = ChatMessage(
-            type = "register",
-            clientName = "KotlinClient",
-            message = "Hello from Kotlin!"
-        )
-
-        val jsonString = Json.encodeToString(chatMessage)
-        webSocket.send(jsonString)
-    }
 }
 
 class Field(val row: Int, val col: Int, var player: Int, var iv: ImageView)
