@@ -10,6 +10,17 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import android.widget.TableLayout
 import android.widget.TableRow
+import org.java_websocket.client.WebSocketClient
+import org.java_websocket.handshake.Handshakedata
+import org.java_websocket.handshake.ServerHandshake
+import java.lang.Exception
+import java.net.URI
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import org.java_websocket.WebSocket
+import kotlinx.serialization.json.*
+
 
 class MainActivity : AppCompatActivity() {
     var curPlayer = 1
@@ -22,6 +33,7 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+        connectaWS()
         val tableLayout = findViewById<TableLayout>(R.id.tableLayout)
 
         val numRows = 6
@@ -107,6 +119,71 @@ class MainActivity : AppCompatActivity() {
         {
             curPlayer = 1
         }
+    }
+
+    class MyWebSocketClient(serverUri: URI) : WebSocketClient(serverUri) {
+        override fun onOpen(handshakedata: ServerHandshake?) {
+            Log.d("CONNECTION", "Connected")
+
+            val message = ChatMessage("register", "KotlinClient", "Hi")
+            val json = Json.encodeToString(message)
+
+            send(Json.encodeToString(message))
+
+        }
+
+        override fun onMessage(message: String?) {
+            Log.d("CONNECTION", "Message received: " + message)
+            message?.isEmpty()?.let {
+                if(!it) {
+                    val jsonElement = Json.parseToJsonElement(message)
+                    if (jsonElement is JsonObject) {
+                        val jsonObject = jsonElement
+                        var type = jsonObject["type"]?.jsonPrimitive?.contentOrNull
+
+                        // Aquí se harán cosas dependiendo del tipo de mensaje que llegue
+                        if (type.equals("challenge")) {
+                            var challenger = jsonObject["challenger"]?.jsonPrimitive?.contentOrNull
+                            Log.d("CONNECTION", "Challenger: " + challenger)
+                        }
+
+
+                    }
+                }
+            }
+        }
+
+        override fun onClose(code: Int, reason: String?, remote: Boolean) {
+            Log.d("CONNECTION", "Closed connection")
+        }
+
+        override fun onError(ex: Exception?) {
+            Log.d("CONNECTION", "Error")
+        }
+    }
+
+    fun connectaWS() {
+        val uri = URI("ws://10.0.2.2:3000")
+        var wsclient = MyWebSocketClient(uri)
+        wsclient.connect()
+    }
+
+    @Serializable
+    data class ChatMessage(
+        val type: String,
+        val clientName: String,
+        val message: String
+    )
+
+    fun sendJsonMessage(webSocket: WebSocket) {
+        val chatMessage = ChatMessage(
+            type = "register",
+            clientName = "KotlinClient",
+            message = "Hello from Kotlin!"
+        )
+
+        val jsonString = Json.encodeToString(chatMessage)
+        webSocket.send(jsonString)
     }
 }
 
