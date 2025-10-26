@@ -1,7 +1,10 @@
 package com.alvaroarmas.conecta4android
 
 import android.R
+import android.content.Context
+import android.content.Intent
 import android.util.Log
+import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import kotlinx.serialization.json.Json
@@ -18,6 +21,11 @@ import java.net.URI
 import kotlinx.serialization.json.*
 
 object WebSocketManager {
+    lateinit var appContext: Context
+
+    fun init(context: Context) {
+        appContext = context.applicationContext
+    }
 
     private var webSocketClient: WebSocketClient? = null
 
@@ -58,6 +66,10 @@ object WebSocketManager {
                                 send(Json.encodeToString(matchJson))
                             }
 
+                            if(type.equals("confirmedGame")) {
+                                RegisterActivity.goGameActivity(appContext)
+                            }
+
                             if(type.equals("drawOrder")) {
                                 // Log.d("CONNECTION", "drawOrder")
 
@@ -76,14 +88,14 @@ object WebSocketManager {
 
 
                                         // Cambiando el turno al correcto
-                                        var current_turn = jsonElement.get("turn")?.jsonPrimitive?.contentOrNull.toString()
+                                        var current_turn = jsonElement["turn"]?.jsonPrimitive?.contentOrNull.toString()
 
                                         GameActivity.curPlayer = current_turn.toInt()
                                         // Log.d("CURRENT_PLAYER", GameActivity.curPlayer.toString())
                                     }
                                 }
                                 // Log.d("CONNECTION", gridStr.toString())
-                                var winner = jsonElement.get("winner")
+                                var winner = jsonElement["winner"]
                                 GameActivity.winner = winner.toString()
                                 Log.d("WINNER", GameActivity.winner)
 
