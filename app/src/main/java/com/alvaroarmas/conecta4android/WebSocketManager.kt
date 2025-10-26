@@ -67,6 +67,7 @@ object WebSocketManager {
                             }
 
                             if(type.equals("confirmedGame")) {
+                                Thread.sleep(3000)
                                 RegisterActivity.goGameActivity(appContext)
                             }
 

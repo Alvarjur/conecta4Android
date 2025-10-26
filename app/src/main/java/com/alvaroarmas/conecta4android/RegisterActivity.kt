@@ -19,6 +19,7 @@ class RegisterActivity : AppCompatActivity() {
         fun goGameActivity(context: Context) {
             // Cambiando de activity
             val intent = Intent(context, GameActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
             context.startActivity(intent)
         }
     }
