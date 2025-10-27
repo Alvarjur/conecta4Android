@@ -174,6 +174,9 @@ fun TableLayout.updateLayout(activity: Activity, clients: String) {
     this.removeAllViews() // Limpia antes si quieres refrescar
 
     for (item in clients.split(",")) {
+        if (item == "") { continue }
+
+        Log.d("CLIENT", item)
         val fila = TableRow(activity).apply {
             layoutParams = TableRow.LayoutParams(
                 TableRow.LayoutParams.MATCH_PARENT,
@@ -189,6 +192,7 @@ fun TableLayout.updateLayout(activity: Activity, clients: String) {
         val boton1 = Button(activity).apply {
             text = "Challenge"
             setOnClickListener {
+                // Aquí hacer que mande el battle request
                 Toast.makeText(activity, "Acción 1: $item", Toast.LENGTH_SHORT).show()
             }
         }
