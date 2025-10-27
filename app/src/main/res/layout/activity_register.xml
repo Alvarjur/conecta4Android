@@ -7,12 +7,6 @@
     android:layout_height="match_parent"
     tools:context=".RegisterActivity">
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-    </com.google.android.material.textfield.TextInputLayout>
-
     <com.google.android.material.textfield.TextInputEditText
         android:id="@+id/client_name"
         android:layout_width="match_parent"
@@ -23,19 +17,36 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.google.android.material.textfield.TextInputLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-
-    </com.google.android.material.textfield.TextInputLayout>
-
     <com.google.android.material.textfield.TextInputEditText
         android:id="@+id/connection_url"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="69dp"
+        android:layout_marginTop="128dp"
         android:hint="URL"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/client_name" />
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/port"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="192dp"
+        android:hint="PORT"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/client_name" />
+
+    <com.google.android.material.textfield.TextInputEditText
+        android:id="@+id/protocol"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="264dp"
+        android:hint="PROTOCOL"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/client_name" />
 
@@ -51,4 +62,31 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/connection_url" />
+
+    <Button
+        android:id="@+id/bttn_local"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="17dp"
+        android:layout_marginTop="66dp"
+        android:layout_marginEnd="16dp"
+        android:onClick="setLocal"
+        android:text="Local"
+        app:layout_constraintEnd_toStartOf="@+id/bttn_proxmox"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/protocol" />
+
+    <Button
+        android:id="@+id/bttn_proxmox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="66dp"
+        android:layout_marginEnd="8dp"
+        android:onClick="setProxmox"
+        android:text="Proxmox"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/bttn_local"
+        app:layout_constraintTop_toBottomOf="@+id/protocol" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

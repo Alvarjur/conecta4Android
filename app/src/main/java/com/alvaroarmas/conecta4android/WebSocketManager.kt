@@ -1,9 +1,16 @@
 package com.alvaroarmas.conecta4android
 
 import android.R
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.util.Log
+import android.widget.Button
+import android.widget.TableLayout
+import android.widget.TableRow
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -22,6 +29,7 @@ import kotlinx.serialization.json.*
 
 object WebSocketManager {
     lateinit var appContext: Context
+    public var viewClientsActivity: AppCompatActivity? = null
 
     fun init(context: Context) {
         appContext = context.applicationContext
@@ -53,6 +61,23 @@ object WebSocketManager {
                             var type = jsonObject["type"]?.jsonPrimitive?.contentOrNull
 
                             // Aquí se harán cosas dependiendo del tipo de mensaje que llegue
+                            if(type.equals("clients")) {
+                                // Aquí mostrar todos los jugadores y hacer que pueda mandar la solicitud
+                                var lista = jsonObject["list"]?.jsonArray
+                                var str = ""
+                                if (lista != null) {
+                                    for (item in lista) {
+                                        str += item
+                                        if (lista.indexOf(item) != lista.size) {
+                                            str += ","
+                                        }
+                                        Log.d("ITEMWSM", item.toString())
+                                    }
+                                }
+                                ViewClients.clients = str
+                                ViewClients.updateLayout(viewClientsActivity as Activity, ViewClients.clients)
+
+                            }
                             if (type.equals("challenge")) {
                                 var challenger = jsonObject["challenger"]?.jsonPrimitive?.contentOrNull
                                 Log.d("CONNECTION", "Challenger: " + challenger)
@@ -85,6 +110,7 @@ object WebSocketManager {
 
                                         }
                                         GameActivity.grid = resultGrid
+
                                         GameActivity.updateGrid()
 
 
@@ -140,5 +166,36 @@ object WebSocketManager {
     fun disconnect() {
         webSocketClient?.close()
         webSocketClient = null
+    }
+}
+
+
+fun TableLayout.updateLayout(activity: Activity, clients: String) {
+    this.removeAllViews() // Limpia antes si quieres refrescar
+
+    for (item in clients.split(",")) {
+        val fila = TableRow(activity).apply {
+            layoutParams = TableRow.LayoutParams(
+                TableRow.LayoutParams.MATCH_PARENT,
+                TableRow.LayoutParams.WRAP_CONTENT
+            )
+        }
+
+        val texto = TextView(activity).apply {
+            text = item
+            setPadding(16, 8, 16, 8)
+        }
+
+        val boton1 = Button(activity).apply {
+            text = "Challenge"
+            setOnClickListener {
+                Toast.makeText(activity, "Acción 1: $item", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        fila.addView(texto)
+        fila.addView(boton1)
+
+        this.addView(fila)
     }
 }

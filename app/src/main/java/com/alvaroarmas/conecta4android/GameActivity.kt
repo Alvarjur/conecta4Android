@@ -1,6 +1,8 @@
 package com.alvaroarmas.conecta4android
 
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -29,13 +31,16 @@ class GameActivity : AppCompatActivity() {
         var winner = "none"
 
         fun updateGrid() {
-            for(chip in grid) {
-                var parts = chip.replace("\"", "").replace("[", "").replace("]", "").split(" ")
-                Log.d("PARTS", parts.toString())
-                var field = listFields[parts[0].toInt()][parts[1].toInt()]
-                field.player = parts[2].toInt()
-                field.updateIv()
+            Handler(Looper.getMainLooper()).post {
+                for(chip in grid) {
 
+                    var parts = chip.replace("\"", "").replace("[", "").replace("]", "").split(" ")
+                    Log.d("PARTS", parts.toString())
+                    var field = listFields[parts[0].toInt()][parts[1].toInt()]
+                    field.player = parts[2].toInt()
+                    field.updateIv()
+
+                }
             }
         }
     }
@@ -72,14 +77,17 @@ class GameActivity : AppCompatActivity() {
         for(i in 0 until numCols)
         {
             var btn = ImageButton(this)
-            btn.apply {
-                layoutParams =  TableRow.LayoutParams(
-                0,
-                TableRow.LayoutParams.WRAP_CONTENT,
-                1f
-                )
-                setImageResource(R.drawable.chip_button)
+            runOnUiThread {
+                btn.apply {
+                    layoutParams =  TableRow.LayoutParams(
+                        0,
+                        TableRow.LayoutParams.WRAP_CONTENT,
+                        1f
+                    )
+                    setImageResource(R.drawable.chip_button)
+                }
             }
+
 
             btn.setOnClickListener {
                 for(j in numCols - 2 downTo 0) {
@@ -88,7 +96,10 @@ class GameActivity : AppCompatActivity() {
                             if (listFields.get(j).get(i).player == 0) {
                                 WebSocketManager.sendAddChipMessage(i)
                                 listFields.get(j).get(i).player = curPlayer
-                                listFields.get(j).get(i).updateIv()
+                                runOnUiThread {
+                                    listFields.get(j).get(i).updateIv()
+                                }
+
 
                                 break
                             }
@@ -116,17 +127,23 @@ class GameActivity : AppCompatActivity() {
             var row_fields = ArrayList<Field>()
             for(j in 0 until numCols) {
                 var iv = ImageView(this)
-                iv.setImageResource(R.drawable.chip_blank)
-                iv.apply { layoutParams =  TableRow.LayoutParams(
-                    0,
-                    TableRow.LayoutParams.WRAP_CONTENT,
-                    1f
-                )}
+                runOnUiThread {
+                    iv.setImageResource(R.drawable.chip_blank)
+                    iv.apply { layoutParams =  TableRow.LayoutParams(
+                        0,
+                        TableRow.LayoutParams.WRAP_CONTENT,
+                        1f
+                    )}
+                }
+
 
 
                 var currentField = Field(i, j, 0, iv)
                 row_fields.add(currentField)
-                currentField.updateIv()
+                runOnUiThread {
+                    currentField.updateIv()
+                }
+
                 row.addView(currentField.iv)
             }
 
@@ -149,6 +166,7 @@ class GameActivity : AppCompatActivity() {
 class Field(val row: Int, val col: Int, var player: Int, var iv: ImageView)
 {
     fun updateIv() {
+
         if (player == 0) {
             iv.setImageResource(R.drawable.chip_blank)
         }

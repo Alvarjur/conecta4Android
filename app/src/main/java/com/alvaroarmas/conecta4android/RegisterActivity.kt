@@ -3,6 +3,9 @@ package com.alvaroarmas.conecta4android
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
 import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -38,15 +41,65 @@ class RegisterActivity : AppCompatActivity() {
     }
 
     fun goGame(view: View) {
+        Handler(Looper.getMainLooper()).post {
+            WebSocketManager.username = findViewById<EditText>(R.id.client_name).text.toString()
+            var uri = findViewById<EditText>(R.id.connection_url).text.toString()
+            var port = findViewById<EditText>(R.id.port).text.toString()
+            var protocol = findViewById<EditText>(R.id.protocol).text.toString()
+            var finalUri = ""
+            if (protocol == "") {
+                finalUri += "ws://"
+            } else {
+                finalUri += "$protocol://"
+            }
+            if (uri == "localhost") {
+                finalUri += "10.0.2.2"
+            } else if (uri == "") {
+                finalUri += "10.0.2.2"
+            } else {
+                finalUri += uri
+            }
+            if (port == "") {
+                finalUri += ":3000"
+            } else {
+                finalUri += ":$port"
+            }
+            // val uriTest = "ws://10.0.2.2:3000"
+            Log.d("CONNECTION", finalUri)
+            // Log.d("CONNECTION", uriTest)
+            WebSocketManager.connect(URI(finalUri))
+            WebSocketManager.send("register", "hi")
 
-        WebSocketManager.username = findViewById<EditText>(R.id.client_name).text.toString()
-        val uri = "ws://10.0.2.2:3000"
-
-        WebSocketManager.connect(URI(uri))
-        WebSocketManager.send("register", "hi")
-
+            val intent = Intent(this, ViewClients::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            this.startActivity(intent)
+        }
 
 
+    }
+
+    fun setLocal(view: View) {
+        Handler(Looper.getMainLooper()).post {
+            var uri = findViewById<EditText>(R.id.connection_url)
+            var port = findViewById<EditText>(R.id.port)
+            var protocol = findViewById<EditText>(R.id.protocol)
+
+            uri.setText("localhost")
+            port.setText("3000")
+            protocol.setText("ws")
+        }
+    }
+
+    fun setProxmox(view: View) {
+        Handler(Looper.getMainLooper()).post {
+            var uri = findViewById<EditText>(R.id.connection_url)
+            var port = findViewById<EditText>(R.id.port)
+            var protocol = findViewById<EditText>(R.id.protocol)
+
+            uri.setText("rbellidonavarro.ieti.site")
+            port.setText("443")
+            protocol.setText("wss")
+        }
     }
 
 
