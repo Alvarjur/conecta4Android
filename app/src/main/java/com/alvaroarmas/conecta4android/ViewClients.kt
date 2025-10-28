@@ -66,6 +66,7 @@ class ViewClients : AppCompatActivity() {
 
                             val texto = TextView(activity).apply {
                                 text = newItem
+                                textSize = 24f
                                 setPadding(16, 8, 16, 8)
                             }
 
