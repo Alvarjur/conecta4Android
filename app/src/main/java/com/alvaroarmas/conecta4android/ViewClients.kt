@@ -1,6 +1,8 @@
 package com.alvaroarmas.conecta4android
 
 import android.app.Activity
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -23,6 +25,12 @@ class ViewClients : AppCompatActivity() {
     companion object {
         var clients = ""
 
+        fun goCountdownActivity(context: Context) {
+            // Cambiando de activity
+            val intent = Intent(context, CountdownActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            context.startActivity(intent)
+        }
         fun showChallenge(activity: Activity, challenger:String) {
             activity.runOnUiThread {
                 AlertDialog.Builder(activity)
@@ -32,7 +40,7 @@ class ViewClients : AppCompatActivity() {
                         WebSocketManager.sendAcceptChallenge(challenger)
                     }
                     .setNegativeButton("No") { dialog, _ ->
-                        //fuckoff
+                        WebSocketManager.sendRefusedChallenge(challenger)
                     }
                     .show()
             }

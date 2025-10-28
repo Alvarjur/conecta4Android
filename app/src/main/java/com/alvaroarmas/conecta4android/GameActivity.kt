@@ -35,7 +35,7 @@ class GameActivity : AppCompatActivity() {
                 for(chip in grid) {
 
                     var parts = chip.replace("\"", "").replace("[", "").replace("]", "").split(" ")
-                    Log.d("PARTS", parts.toString())
+                    // Log.d("PARTS", parts.toString())
                     var field = listFields[parts[0].toInt()][parts[1].toInt()]
                     field.player = parts[2].toInt()
                     field.updateIv()

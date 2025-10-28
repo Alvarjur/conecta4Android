@@ -1,38 +1,28 @@
 package com.alvaroarmas.conecta4android
 
-import android.R
 import android.app.Activity
 import android.content.Context
-import android.content.Intent
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
-import android.view.View
 import android.widget.Button
 import android.widget.TableLayout
 import android.widget.TableRow
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat.startActivity
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.buildJsonObject
-import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.jsonPrimitive
-import kotlinx.serialization.json.put
-import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.*
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.handshake.ServerHandshake
+import org.json.JSONObject
 import java.net.URI
-import kotlinx.serialization.json.*
+
 
 object WebSocketManager {
     lateinit var appContext: Context
     public var viewClientsActivity: AppCompatActivity? = null
+    public var countdownActivity: AppCompatActivity? = null
 
 
     fun init(context: Context) {
@@ -60,104 +50,121 @@ object WebSocketManager {
                     // Log.d("CONNECTION", "Message received: " + message)
                     message?.isEmpty()?.let {
                         if (!it) {
-                            val jsonElement = Json.parseToJsonElement(message)
-                            if (jsonElement is JsonObject) {
-                                val jsonObject = jsonElement
-                                var type = jsonObject["type"]?.jsonPrimitive?.contentOrNull
+                            if (message.trim().startsWith("{") || message.trim().startsWith("[")) {
+                                val jsonElement = Json.parseToJsonElement(message)
+                                if (jsonElement is JsonObject) {
+                                    val jsonObject = jsonElement
+                                    var type = jsonObject["type"]?.jsonPrimitive?.contentOrNull
 
-                                // Aquí se harán cosas dependiendo del tipo de mensaje que llegue
-                                if (type.equals("clients")) {
-                                    // Aquí mostrar todos los jugadores y hacer que pueda mandar la solicitud
-                                    var lista = jsonObject["list"]?.jsonArray
-                                    var str = ""
-                                    if (lista != null) {
-                                        for (item in lista) {
-                                            str += item
-                                            if (lista.indexOf(item) != lista.size) {
-                                                str += ","
+                                    // Aquí se harán cosas dependiendo del tipo de mensaje que llegue
+                                    if (type.equals("clients")) {
+                                        // Aquí mostrar todos los jugadores y hacer que pueda mandar la solicitud
+                                        var lista = jsonObject["list"]?.jsonArray
+                                        var str = ""
+                                        if (lista != null) {
+                                            for (item in lista) {
+                                                str += item
+                                                if (lista.indexOf(item) != lista.size) {
+                                                    str += ","
+                                                }
+                                                Log.d("ITEMWSM", item.toString())
                                             }
-                                            Log.d("ITEMWSM", item.toString())
                                         }
-                                    }
-                                    ViewClients.clients = str
-                                    ViewClients.updateLayout(
-                                        viewClientsActivity as Activity,
-                                        ViewClients.clients
-                                    )
-
-                                }
-                                if (type.equals("challenge")) {
-                                    var challenger =
-                                        jsonObject["challenger"]?.jsonPrimitive?.contentOrNull
-                                    Log.d("CONNECTION", "Challenger: " + challenger)
-                                    // Aceptando el challenge
-                                    println("Entro en sendStartMatch")
-                                    //val matchJson = buildJsonObject {
-                                    //    put("type", "startMatch")
-                                    //    put("player_1", challenger)
-                                    //    put("player_2", username)
-                                    //}
-                                    //send(Json.encodeToString(matchJson))
-                                    ViewClients.showChallenge(viewClientsActivity as Activity, challenger.toString())
-                                }
-
-                                if (type.equals("confirmedGame")) {
-                                    Thread.sleep(3000)
-                                    RegisterActivity.goGameActivity(appContext)
-                                }
-
-                                if (type.equals("startMatch")) {
-                                    Thread.sleep(3000)
-                                    RegisterActivity.goGameActivity(appContext)
-                                }
-
-                                if (type.equals("remainingCountdown")) {
-                                    var timeRemaining =
-                                        jsonObject["value"]?.jsonPrimitive?.contentOrNull
-                                }
-
-                                if (type.equals("startCountdown")) {
-                                    Thread.sleep(3000)
-                                    RegisterActivity.goGameActivity(appContext)
-                                }
-
-                                if (type.equals("drawOrder")) {
-                                    // Log.d("CONNECTION", "drawOrder")
-
-                                    var gridStr = jsonObject["grid"]?.jsonArray
-                                    gridStr.let { array ->
-                                        if (array != null) {
-                                            // Actualizando la grid
-                                            var resultGrid = mutableListOf<String>()
-                                            for (element in array) {
-                                                // Log.d("GRID", GameActivity.grid.toString())
-                                                resultGrid.add(element.toString())
-
-                                            }
-                                            GameActivity.grid = resultGrid
-
-                                            GameActivity.updateGrid()
-
-
-
-                                            // Log.d("CURRENT_PLAYER", GameActivity.curPlayer.toString())
-                                        }
+                                        ViewClients.clients = str
+                                        ViewClients.updateLayout(
+                                            viewClientsActivity as Activity,
+                                            ViewClients.clients
+                                        )
 
                                     }
-                                    // Cambiando el turno al correcto
-                                    var current_turn =
-                                        jsonElement["turn"]?.jsonPrimitive?.contentOrNull.toString()
-                                    GameActivity.curPlayer = current_turn.toInt()
-                                    Log.d("TURN", GameActivity.curPlayer.toString())
+                                    if (type.equals("challenge")) {
+                                        var challenger =
+                                            jsonObject["challenger"]?.jsonPrimitive?.contentOrNull
+                                        Log.d("CONNECTION", "Challenger: " + challenger)
+                                        // Aceptando el challenge
+                                        println("Entro en sendStartMatch")
 
-                                    // Log.d("CONNECTION", gridStr.toString())
-                                    var winner = jsonElement["winner"]
-                                    GameActivity.winner = winner.toString()
-                                    // Log.d("WINNER", GameActivity.winner)
+
+                                        //val matchJson = buildJsonObject {
+                                        //    put("type", "startMatch")
+                                        //    put("player_1", challenger)
+                                        //    put("player_2", username)
+                                        //}
+                                        //send(Json.encodeToString(matchJson))
+                                        ViewClients.showChallenge(
+                                            viewClientsActivity as Activity,
+                                            challenger.toString()
+                                        )
+                                    }
+
+                                    if (type.equals("confirmedGame")) {
+                                        Thread.sleep(3000)
+                                        RegisterActivity.goGameActivity(appContext)
+                                    }
+
+                                    if (type.equals("startMatch")) {
+                                        Log.d("STARTMATCH", "ENTRO EN STARTMATCH")
+
+                                    }
+
+                                    if (type.equals("remainingCountdown")) {
+                                        var timeRemaining =
+                                            jsonObject["value"]?.jsonPrimitive?.contentOrNull
+                                        CountdownActivity.countdownTime = timeRemaining?.toInt()!!
+                                        CountdownActivity.updateTime(countdownActivity as Activity)
+
+                                        if(timeRemaining.toInt() == 0) {
+                                            CountdownActivity.goGameActivity(countdownActivity as Activity)
+                                        }
+                                    }
+
+                                    if (type.equals("startCountdown")) {
+                                        ViewClients.goCountdownActivity(viewClientsActivity as Activity)
+                                        var player1 =
+                                            jsonObject["player_1"]?.jsonPrimitive?.contentOrNull.toString()
+                                        var player2 =
+                                            jsonObject["player_2"]?.jsonPrimitive?.contentOrNull.toString()
+                                        CountdownActivity.name1 = player1
+                                        CountdownActivity.name2 = player2
+                                    }
+
+                                    if (type.equals("drawOrder")) {
+                                        // Log.d("CONNECTION", "drawOrder")
+
+                                        var gridStr = jsonObject["grid"]?.jsonArray
+                                        gridStr.let { array ->
+                                            if (array != null) {
+                                                // Actualizando la grid
+                                                var resultGrid = mutableListOf<String>()
+                                                for (element in array) {
+                                                    // Log.d("GRID", GameActivity.grid.toString())
+                                                    resultGrid.add(element.toString())
+
+                                                }
+                                                GameActivity.grid = resultGrid
+
+                                                GameActivity.updateGrid()
+
+
+                                                // Log.d("CURRENT_PLAYER", GameActivity.curPlayer.toString())
+                                            }
+
+                                        }
+                                        // Cambiando el turno al correcto
+                                        var current_turn =
+                                            jsonElement["turn"]?.jsonPrimitive?.contentOrNull.toString()
+                                        GameActivity.curPlayer = current_turn.toInt()
+                                        Log.d("TURN", GameActivity.curPlayer.toString())
+
+                                        // Log.d("CONNECTION", gridStr.toString())
+                                        var winner = jsonElement["winner"]
+                                        GameActivity.winner = winner.toString()
+                                        // Log.d("WINNER", GameActivity.winner)
+
+                                    }
+
 
                                 }
-
-
                             }
                         }
                     }
@@ -190,6 +197,14 @@ object WebSocketManager {
         }
         webSocketClient?.send(Json.encodeToString(matchJson))
     }
+
+    fun sendRefusedChallenge(challenger: String) {
+        val refusedMatchJson = buildJsonObject {
+            put("type", "refusedMatch")
+            put("challenger", challenger)
+        }
+        webSocketClient?.send(Json.encodeToString(refusedMatchJson))
+    }
     fun sendAddChipMessage(col: Int) {
         send("kotlinAddChip", col.toString())
     }
@@ -199,6 +214,7 @@ object WebSocketManager {
             put("clientName", username)
             put("challengedClientName", challenged)
         }
+        // CountdownActivity.name2 = challenged
         webSocketClient?.send(Json.encodeToString(jsonObject))
     }
     fun send(type: String, message: String) {
