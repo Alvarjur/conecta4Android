@@ -41,40 +41,39 @@ class RegisterActivity : AppCompatActivity() {
     }
 
     fun goGame(view: View) {
-        Handler(Looper.getMainLooper()).post {
-            WebSocketManager.username = findViewById<EditText>(R.id.client_name).text.toString()
-            var uri = findViewById<EditText>(R.id.connection_url).text.toString()
-            var port = findViewById<EditText>(R.id.port).text.toString()
-            var protocol = findViewById<EditText>(R.id.protocol).text.toString()
-            var finalUri = ""
-            if (protocol == "") {
-                finalUri += "ws://"
-            } else {
-                finalUri += "$protocol://"
-            }
-            if (uri == "localhost") {
-                finalUri += "10.0.2.2"
-            } else if (uri == "") {
-                finalUri += "10.0.2.2"
-            } else {
-                finalUri += uri
-            }
-            if (port == "") {
-                finalUri += ":3000"
-            } else {
-                finalUri += ":$port"
-            }
-            // val uriTest = "ws://10.0.2.2:3000"
-            Log.d("CONNECTION", finalUri)
-            // Log.d("CONNECTION", uriTest)
-            WebSocketManager.connect(URI(finalUri))
-            WebSocketManager.send("register", "hi")
 
-            val intent = Intent(this, ViewClients::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            this.startActivity(intent)
+        WebSocketManager.username = findViewById<EditText>(R.id.client_name).text.toString()
+        var uri = findViewById<EditText>(R.id.connection_url).text.toString()
+        var port = findViewById<EditText>(R.id.port).text.toString()
+        var protocol = findViewById<EditText>(R.id.protocol).text.toString()
+        var finalUri = ""
+        if (protocol == "") {
+            finalUri += "ws://"
+        } else {
+            finalUri += "$protocol://"
         }
+        if (uri == "localhost") {
+            finalUri += "10.0.2.2"
+        } else if (uri == "") {
+            finalUri += "10.0.2.2"
+        } else {
+            finalUri += uri
+        }
+        if (port == "") {
+            finalUri += ":3000"
+        } else {
+            finalUri += ":$port"
+        }
+        // val uriTest = "ws://10.0.2.2:3000"
+        Log.d("CONNECTION", finalUri)
+        // Log.d("CONNECTION", uriTest)
+        WebSocketManager.connect(URI(finalUri))
+        Log.d("CONNECTION", "SENDING REGISTER MESSAGE")
+        WebSocketManager.send("register", "hi")
 
+        val intent = Intent(this, ViewClients::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+        this.startActivity(intent)
 
     }
 

@@ -4,7 +4,10 @@ import android.R
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.TableLayout
 import android.widget.TableRow
@@ -31,6 +34,7 @@ object WebSocketManager {
     lateinit var appContext: Context
     public var viewClientsActivity: AppCompatActivity? = null
 
+
     fun init(context: Context) {
         appContext = context.applicationContext
     }
@@ -44,116 +48,159 @@ object WebSocketManager {
     var username = "KotlinClient"
 
     fun connect(uri: URI) {
+
         if (webSocketClient != null) return // already connected
 
         webSocketClient = object : WebSocketClient(uri) {
-            override fun onOpen(handshakedata: ServerHandshake?) {
-                Log.d("WebSocket", "Connected")
-            }
+                override fun onOpen(handshakedata: ServerHandshake?) {
+                    Log.d("WebSocket", "Connected")
+                }
 
-            override fun onMessage(message: String?) {
-                Log.d("CONNECTION", "Message received: " + message)
-                message?.isEmpty()?.let {
-                    if(!it) {
-                        val jsonElement = Json.parseToJsonElement(message)
-                        if (jsonElement is JsonObject) {
-                            val jsonObject = jsonElement
-                            var type = jsonObject["type"]?.jsonPrimitive?.contentOrNull
+                override fun onMessage(message: String?) {
+                    // Log.d("CONNECTION", "Message received: " + message)
+                    message?.isEmpty()?.let {
+                        if (!it) {
+                            val jsonElement = Json.parseToJsonElement(message)
+                            if (jsonElement is JsonObject) {
+                                val jsonObject = jsonElement
+                                var type = jsonObject["type"]?.jsonPrimitive?.contentOrNull
 
-                            // Aquí se harán cosas dependiendo del tipo de mensaje que llegue
-                            if(type.equals("clients")) {
-                                // Aquí mostrar todos los jugadores y hacer que pueda mandar la solicitud
-                                var lista = jsonObject["list"]?.jsonArray
-                                var str = ""
-                                if (lista != null) {
-                                    for (item in lista) {
-                                        str += item
-                                        if (lista.indexOf(item) != lista.size) {
-                                            str += ","
+                                // Aquí se harán cosas dependiendo del tipo de mensaje que llegue
+                                if (type.equals("clients")) {
+                                    // Aquí mostrar todos los jugadores y hacer que pueda mandar la solicitud
+                                    var lista = jsonObject["list"]?.jsonArray
+                                    var str = ""
+                                    if (lista != null) {
+                                        for (item in lista) {
+                                            str += item
+                                            if (lista.indexOf(item) != lista.size) {
+                                                str += ","
+                                            }
+                                            Log.d("ITEMWSM", item.toString())
                                         }
-                                        Log.d("ITEMWSM", item.toString())
                                     }
+                                    ViewClients.clients = str
+                                    ViewClients.updateLayout(
+                                        viewClientsActivity as Activity,
+                                        ViewClients.clients
+                                    )
+
                                 }
-                                ViewClients.clients = str
-                                ViewClients.updateLayout(viewClientsActivity as Activity, ViewClients.clients)
-
-                            }
-                            if (type.equals("challenge")) {
-                                var challenger = jsonObject["challenger"]?.jsonPrimitive?.contentOrNull
-                                Log.d("CONNECTION", "Challenger: " + challenger)
-                                // Aceptando el challenge
-                                println("Entro en sendStartMatch")
-                                val matchJson = buildJsonObject {
-                                    put("type", "startMatch")
-                                    put("player_1", challenger)
-                                    put("player_2", username)
+                                if (type.equals("challenge")) {
+                                    var challenger =
+                                        jsonObject["challenger"]?.jsonPrimitive?.contentOrNull
+                                    Log.d("CONNECTION", "Challenger: " + challenger)
+                                    // Aceptando el challenge
+                                    println("Entro en sendStartMatch")
+                                    //val matchJson = buildJsonObject {
+                                    //    put("type", "startMatch")
+                                    //    put("player_1", challenger)
+                                    //    put("player_2", username)
+                                    //}
+                                    //send(Json.encodeToString(matchJson))
+                                    ViewClients.showChallenge(viewClientsActivity as Activity, challenger.toString())
                                 }
-                                send(Json.encodeToString(matchJson))
-                            }
 
-                            if(type.equals("confirmedGame")) {
-                                Thread.sleep(3000)
-                                RegisterActivity.goGameActivity(appContext)
-                            }
+                                if (type.equals("confirmedGame")) {
+                                    Thread.sleep(3000)
+                                    RegisterActivity.goGameActivity(appContext)
+                                }
 
-                            if(type.equals("drawOrder")) {
-                                // Log.d("CONNECTION", "drawOrder")
+                                if (type.equals("startMatch")) {
+                                    Thread.sleep(3000)
+                                    RegisterActivity.goGameActivity(appContext)
+                                }
 
-                                var gridStr = jsonObject["grid"]?.jsonArray
-                                gridStr.let { array ->
-                                    if (array != null) {
-                                        // Actualizando la grid
-                                        var resultGrid = mutableListOf<String>()
-                                        for (element in array) {
-                                            // Log.d("GRID", GameActivity.grid.toString())
-                                            resultGrid.add(element.toString())
+                                if (type.equals("remainingCountdown")) {
+                                    var timeRemaining =
+                                        jsonObject["value"]?.jsonPrimitive?.contentOrNull
+                                }
 
+                                if (type.equals("startCountdown")) {
+                                    Thread.sleep(3000)
+                                    RegisterActivity.goGameActivity(appContext)
+                                }
+
+                                if (type.equals("drawOrder")) {
+                                    // Log.d("CONNECTION", "drawOrder")
+
+                                    var gridStr = jsonObject["grid"]?.jsonArray
+                                    gridStr.let { array ->
+                                        if (array != null) {
+                                            // Actualizando la grid
+                                            var resultGrid = mutableListOf<String>()
+                                            for (element in array) {
+                                                // Log.d("GRID", GameActivity.grid.toString())
+                                                resultGrid.add(element.toString())
+
+                                            }
+                                            GameActivity.grid = resultGrid
+
+                                            GameActivity.updateGrid()
+
+
+
+                                            // Log.d("CURRENT_PLAYER", GameActivity.curPlayer.toString())
                                         }
-                                        GameActivity.grid = resultGrid
 
-                                        GameActivity.updateGrid()
-
-
-                                        // Cambiando el turno al correcto
-                                        var current_turn = jsonElement["turn"]?.jsonPrimitive?.contentOrNull.toString()
-
-                                        GameActivity.curPlayer = current_turn.toInt()
-                                        // Log.d("CURRENT_PLAYER", GameActivity.curPlayer.toString())
                                     }
+                                    // Cambiando el turno al correcto
+                                    var current_turn =
+                                        jsonElement["turn"]?.jsonPrimitive?.contentOrNull.toString()
+                                    GameActivity.curPlayer = current_turn.toInt()
+                                    Log.d("TURN", GameActivity.curPlayer.toString())
+
+                                    // Log.d("CONNECTION", gridStr.toString())
+                                    var winner = jsonElement["winner"]
+                                    GameActivity.winner = winner.toString()
+                                    // Log.d("WINNER", GameActivity.winner)
+
                                 }
-                                // Log.d("CONNECTION", gridStr.toString())
-                                var winner = jsonElement["winner"]
-                                GameActivity.winner = winner.toString()
-                                Log.d("WINNER", GameActivity.winner)
+
 
                             }
-
-
                         }
                     }
+
+                }
+
+
+                override fun onClose(code: Int, reason: String?, remote: Boolean) {
+                    Log.d("WebSocket", "Closed: $reason")
+                }
+
+                override fun onError(ex: Exception?) {
+                    Log.e("WebSocket", "Error: ${ex?.message}", ex)
                 }
             }
 
-            override fun onClose(code: Int, reason: String?, remote: Boolean) {
-                Log.d("WebSocket", "Closed: $reason")
-            }
+            webSocketClient?.connect()
 
-            override fun onError(ex: Exception?) {
-                Log.e("WebSocket", "Error: ${ex?.message}", ex)
-            }
-        }
-
-        webSocketClient?.connect()
     }
 
     fun sendMessage(message: String) {
         webSocketClient?.send(message)
     }
 
+    fun sendAcceptChallenge(challenger: String) {
+        val matchJson = buildJsonObject {
+            put("type", "startMatch")
+            put("player_1", challenger)
+            put("player_2", username)
+        }
+        webSocketClient?.send(Json.encodeToString(matchJson))
+    }
     fun sendAddChipMessage(col: Int) {
         send("kotlinAddChip", col.toString())
     }
-
+    fun sendChallenge(challenged: String) {
+        var jsonObject = buildJsonObject {
+            put("type", "challenge")
+            put("clientName", username)
+            put("challengedClientName", challenged)
+        }
+        webSocketClient?.send(Json.encodeToString(jsonObject))
+    }
     fun send(type: String, message: String) {
         var jsonObject = buildJsonObject {
             put("type", type)

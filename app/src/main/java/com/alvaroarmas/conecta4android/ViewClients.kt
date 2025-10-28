@@ -2,53 +2,84 @@ package com.alvaroarmas.conecta4android
 
 import android.app.Activity
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
 import android.widget.Button
+import android.widget.TableLayout
 import android.widget.TableRow
+import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import android.widget.TableLayout
-import android.widget.TextView
-import android.widget.Toast
-import android.util.Log
+import kotlinx.serialization.json.buildJsonObject
+import org.json.JSONObject
+
 
 class ViewClients : AppCompatActivity() {
     companion object {
         var clients = ""
 
+        fun showChallenge(activity: Activity, challenger:String) {
+            activity.runOnUiThread {
+                AlertDialog.Builder(activity)
+                    .setTitle("Challenged!")
+                    .setMessage("Accept challenge by $challenger?")
+                    .setPositiveButton("Yes") { _, _ ->
+                        WebSocketManager.sendAcceptChallenge(challenger)
+                    }
+                    .setNegativeButton("No") { dialog, _ ->
+                        //fuckoff
+                    }
+                    .show()
+            }
+
+
+        }
         fun updateLayout(activity: Activity, clients:String) {
-            var tableLayout = activity.findViewById<TableLayout>(R.id.table_layout)
-            tableLayout.removeAllViews() // Limpia antes si quieres refrescar
+            Handler(Looper.getMainLooper()).post {
+                var tableLayout = activity.findViewById<TableLayout>(R.id.table_layout)
+                tableLayout.removeAllViews() // Limpia antes si quieres refrescar
 
-            for (item in clients.split(",")) {
-                Log.d("CLIENT", item)
-                val fila = TableRow(activity).apply {
-                    layoutParams = TableRow.LayoutParams(
-                        TableRow.LayoutParams.MATCH_PARENT,
-                        TableRow.LayoutParams.WRAP_CONTENT
-                    )
-                }
+                for (item in clients.split(",")) {
+                    var newItem = item.replace("\"", "")
+                    if (newItem != "") {
+                        if (newItem != WebSocketManager.username) {
+                            Log.d("CLIENT", newItem)
+                            val fila = TableRow(activity).apply {
+                                layoutParams = TableRow.LayoutParams(
+                                    TableRow.LayoutParams.MATCH_PARENT,
+                                    TableRow.LayoutParams.WRAP_CONTENT
+                                )
+                            }
 
-                val texto = TextView(activity).apply {
-                    text = item
-                    setPadding(16, 8, 16, 8)
-                }
+                            val texto = TextView(activity).apply {
+                                text = newItem
+                                setPadding(16, 8, 16, 8)
+                            }
 
-                val boton1 = Button(activity).apply {
-                    text = "Challenge"
-                    setOnClickListener {
-                        Toast.makeText(activity, "Acción 1: $item", Toast.LENGTH_SHORT).show()
+                            val boton1 = Button(activity).apply {
+                                text = "Challenge"
+                                setOnClickListener {
+
+                                    WebSocketManager.sendChallenge(newItem)
+                                    GameActivity.player = 1
+                                }
+                            }
+
+
+
+                            fila.addView(texto)
+                            fila.addView(boton1)
+
+
+                            tableLayout.addView(fila)
+                        }
                     }
                 }
-
-
-
-                fila.addView(texto)
-                fila.addView(boton1)
-
-
-                tableLayout.addView(fila)
             }
         }
 
