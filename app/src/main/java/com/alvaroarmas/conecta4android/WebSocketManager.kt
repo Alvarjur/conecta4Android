@@ -37,13 +37,16 @@ object WebSocketManager {
 
     var username = "KotlinClient"
 
-    fun connect(uri: URI) {
+    fun connect(uri: URI, onConnected: (() -> Unit)? = null) {
 
         if (webSocketClient != null) return // already connected
+
+
 
         webSocketClient = object : WebSocketClient(uri) {
                 override fun onOpen(handshakedata: ServerHandshake?) {
                     Log.d("WebSocket", "Connected")
+                    onConnected?.invoke()
                 }
 
                 override fun onMessage(message: String?) {
@@ -98,8 +101,8 @@ object WebSocketManager {
                                     }
 
                                     if (type.equals("confirmedGame")) {
-                                        Thread.sleep(3000)
-                                        RegisterActivity.goGameActivity(appContext)
+                                        // Thread.sleep(3000)
+                                        // RegisterActivity.goGameActivity(appContext)
                                     }
 
                                     if (type.equals("startMatch")) {

@@ -51,12 +51,14 @@ class ViewClients : AppCompatActivity() {
             Handler(Looper.getMainLooper()).post {
                 var tableLayout = activity.findViewById<TableLayout>(R.id.table_layout)
                 tableLayout.removeAllViews() // Limpia antes si quieres refrescar
-
+                Log.d("WDADSADDASD", "dlskdksahdhsadhsajdhj")
+                Log.d("WDADSADDASD", "dlskdksahdhsadhsajdhj")
                 for (item in clients.split(",")) {
                     var newItem = item.replace("\"", "")
                     if (newItem != "") {
-                        if (newItem != WebSocketManager.username) {
+                        if (newItem != WebSocketManager.username && newItem != "\"${WebSocketManager.username}\"") {
                             Log.d("CLIENT", newItem)
+                            Log.d("WDADSADDASD", "dlskdksahdhsadhsajdhj")
                             val fila = TableRow(activity).apply {
                                 layoutParams = TableRow.LayoutParams(
                                     TableRow.LayoutParams.MATCH_PARENT,
@@ -105,7 +107,7 @@ class ViewClients : AppCompatActivity() {
             insets
         }
         var tblLayout = findViewById<TableLayout>(R.id.table_layout)
-        tblLayout.updateLayout(this, clients)
+        updateLayout(this, clients)
 
     }
 

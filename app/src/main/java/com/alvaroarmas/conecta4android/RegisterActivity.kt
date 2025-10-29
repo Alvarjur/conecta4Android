@@ -21,9 +21,11 @@ class RegisterActivity : AppCompatActivity() {
     companion object {
         fun goGameActivity(context: Context) {
             // Cambiando de activity
-            val intent = Intent(context, GameActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            context.startActivity(intent)
+
+                val intent = Intent(context, GameActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                context.startActivity(intent)
+
         }
     }
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,13 +69,18 @@ class RegisterActivity : AppCompatActivity() {
         // val uriTest = "ws://10.0.2.2:3000"
         Log.d("CONNECTION", finalUri)
         // Log.d("CONNECTION", uriTest)
-        WebSocketManager.connect(URI(finalUri))
-        Log.d("CONNECTION", "SENDING REGISTER MESSAGE")
-        WebSocketManager.send("register", "hi")
+        WebSocketManager.connect(URI(finalUri)) {
+            Log.d("CONNECTION", "SENDING REGISTER MESSAGE")
+            WebSocketManager.send("register", "hi")
+            Log.d("CONNECTION", "Register message sent")
 
-        val intent = Intent(this, ViewClients::class.java)
-        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-        this.startActivity(intent)
+            val intent = Intent(this, ViewClients::class.java)
+            //intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            this.startActivity(intent)
+        }
+
+
+
 
     }
 
