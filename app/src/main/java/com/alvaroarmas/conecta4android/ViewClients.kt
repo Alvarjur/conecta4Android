@@ -3,6 +3,7 @@ package com.alvaroarmas.conecta4android
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -64,18 +65,21 @@ class ViewClients : AppCompatActivity() {
                                     TableRow.LayoutParams.MATCH_PARENT,
                                     TableRow.LayoutParams.WRAP_CONTENT
                                 )
+                                setBackgroundColor(Color.parseColor("#424657"))
                             }
 
                             val texto = TextView(activity).apply {
                                 text = newItem
+                                setTextColor(Color.WHITE)
                                 textSize = 24f
                                 setPadding(16, 8, 16, 8)
                             }
 
                             val boton1 = Button(activity).apply {
                                 text = "Challenge"
+                                setBackgroundColor(Color.parseColor("#cdd5fa"))
+                                setTextColor(Color.BLACK)
                                 setOnClickListener {
-
                                     WebSocketManager.sendChallenge(newItem)
                                     GameActivity.player = 1
                                 }
