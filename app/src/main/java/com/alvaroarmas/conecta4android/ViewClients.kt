@@ -54,44 +54,46 @@ class ViewClients : AppCompatActivity() {
                 tableLayout.removeAllViews() // Limpia antes si quieres refrescar
                 Log.d("WDADSADDASD", "dlskdksahdhsadhsajdhj")
                 Log.d("WDADSADDASD", "dlskdksahdhsadhsajdhj")
-                for (item in clients.split(",")) {
-                    var newItem = item.replace("\"", "")
-                    if (newItem != "") {
-                        if (newItem != WebSocketManager.username && newItem != "\"${WebSocketManager.username}\"") {
-                            Log.d("CLIENT", newItem)
-                            Log.d("WDADSADDASD", "dlskdksahdhsadhsajdhj")
-                            val fila = TableRow(activity).apply {
-                                layoutParams = TableRow.LayoutParams(
-                                    TableRow.LayoutParams.MATCH_PARENT,
-                                    TableRow.LayoutParams.WRAP_CONTENT
-                                )
-                                setBackgroundColor(Color.parseColor("#424657"))
-                            }
-
-                            val texto = TextView(activity).apply {
-                                text = newItem
-                                setTextColor(Color.WHITE)
-                                textSize = 24f
-                                setPadding(16, 8, 16, 8)
-                            }
-
-                            val boton1 = Button(activity).apply {
-                                text = "Challenge"
-                                setBackgroundColor(Color.parseColor("#cdd5fa"))
-                                setTextColor(Color.BLACK)
-                                setOnClickListener {
-                                    WebSocketManager.sendChallenge(newItem)
-                                    GameActivity.player = 1
+                if (clients.contains(",")) {
+                    for (item in clients.split(",")) {
+                        var newItem = item.replace("\"", "")
+                        if (newItem != "") {
+                            if (newItem != WebSocketManager.username && newItem != "\"${WebSocketManager.username}\"") {
+                                Log.d("CLIENT", newItem)
+                                Log.d("WDADSADDASD", "dlskdksahdhsadhsajdhj")
+                                val fila = TableRow(activity).apply {
+                                    layoutParams = TableRow.LayoutParams(
+                                        TableRow.LayoutParams.MATCH_PARENT,
+                                        TableRow.LayoutParams.WRAP_CONTENT
+                                    )
+                                    setBackgroundColor(Color.parseColor("#424657"))
                                 }
+
+                                val texto = TextView(activity).apply {
+                                    text = newItem
+                                    setTextColor(Color.WHITE)
+                                    textSize = 24f
+                                    setPadding(16, 8, 16, 8)
+                                }
+
+                                val boton1 = Button(activity).apply {
+                                    text = "Challenge"
+                                    setBackgroundColor(Color.parseColor("#cdd5fa"))
+                                    setTextColor(Color.BLACK)
+                                    setOnClickListener {
+                                        WebSocketManager.sendChallenge(newItem)
+                                        GameActivity.player = 1
+                                    }
+                                }
+
+
+
+                                fila.addView(texto)
+                                fila.addView(boton1)
+
+
+                                tableLayout.addView(fila)
                             }
-
-
-
-                            fila.addView(texto)
-                            fila.addView(boton1)
-
-
-                            tableLayout.addView(fila)
                         }
                     }
                 }

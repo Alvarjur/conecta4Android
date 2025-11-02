@@ -1,5 +1,8 @@
 package com.alvaroarmas.conecta4android
 
+import android.app.Activity
+import android.content.Intent
+
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -9,6 +12,7 @@ import android.widget.ImageView
 import android.widget.TableLayout
 import android.widget.TableRow
 import androidx.activity.enableEdgeToEdge
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -29,6 +33,7 @@ class GameActivity : AppCompatActivity() {
         var player = 2
         var curPlayer = 1
         var winner = "none"
+        var hasShownWinner = false
 
         fun updateGrid() {
             Handler(Looper.getMainLooper()).post {
@@ -43,6 +48,33 @@ class GameActivity : AppCompatActivity() {
                 }
             }
         }
+
+        fun showGameResult(activity: Activity) {
+            if (!hasShownWinner) {
+                if (winner.replace("\"", "") == WebSocketManager.username) {
+                    activity.runOnUiThread {
+                        AlertDialog.Builder(activity)
+                            .setTitle("You won!")
+                            .setPositiveButton("Accept") { _, _ ->
+                                val intent = Intent(activity, ViewClients::class.java)
+                                activity.startActivity(intent)
+                            }
+                            .show()
+                    }
+                } else {
+                    activity.runOnUiThread {
+                        AlertDialog.Builder(activity)
+                            .setTitle("You lost...")
+                            .setPositiveButton("Accept") { _, _ ->
+                                val intent = Intent(activity, ViewClients::class.java)
+                                activity.startActivity(intent)
+                            }
+                            .show()
+                    }
+                }
+                hasShownWinner = true
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,7 +86,7 @@ class GameActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-
+        WebSocketManager.gameActivity = this
 
 
         // Observe LiveData from WebSocketManager
@@ -93,6 +125,7 @@ class GameActivity : AppCompatActivity() {
                 for(j in numCols - 2 downTo 0) {
                     if(winner == "\"none\"") {
                         if (curPlayer == player) {
+
                             if (listFields.get(j).get(i).player == 0) {
                                 WebSocketManager.sendAddChipMessage(i)
                                 listFields.get(j).get(i).player = curPlayer
@@ -105,6 +138,8 @@ class GameActivity : AppCompatActivity() {
                             }
 
                         }
+                    } else {
+
                     }
                 }
             }

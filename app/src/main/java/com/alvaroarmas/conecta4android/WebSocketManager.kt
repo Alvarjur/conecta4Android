@@ -23,6 +23,7 @@ object WebSocketManager {
     lateinit var appContext: Context
     public var viewClientsActivity: AppCompatActivity? = null
     public var countdownActivity: AppCompatActivity? = null
+    public var gameActivity: AppCompatActivity? = null
 
 
     fun init(context: Context) {
@@ -162,6 +163,9 @@ object WebSocketManager {
                                         // Log.d("CONNECTION", gridStr.toString())
                                         var winner = jsonElement["winner"]
                                         GameActivity.winner = winner.toString()
+                                        if (winner.toString().replace("\"", "") != "none") {
+                                            GameActivity.showGameResult(gameActivity as Activity)
+                                        }
                                         // Log.d("WINNER", GameActivity.winner)
 
                                     }
