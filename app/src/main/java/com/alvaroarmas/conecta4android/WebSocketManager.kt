@@ -2,6 +2,7 @@ package com.alvaroarmas.conecta4android
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import android.widget.Button
 import android.widget.TableLayout
@@ -22,6 +23,7 @@ import java.net.URI
 object WebSocketManager {
     lateinit var appContext: Context
     public var viewClientsActivity: AppCompatActivity? = null
+    public var registerActivity: AppCompatActivity? = null
     public var countdownActivity: AppCompatActivity? = null
     public var gameActivity: AppCompatActivity? = null
 
@@ -130,6 +132,14 @@ object WebSocketManager {
                                             jsonObject["player_2"]?.jsonPrimitive?.contentOrNull.toString()
                                         CountdownActivity.name1 = player1
                                         CountdownActivity.name2 = player2
+                                    }
+
+                                    if (type.equals("confirmedRegister")) {
+                                        RegisterActivity.goViewClients(registerActivity as Activity)
+                                    }
+
+                                    if (type.equals("clientNameNotAvalible")) {
+                                        RegisterActivity.showNameNotAvlb(registerActivity as Activity)
                                     }
 
                                     if (type.equals("drawOrder")) {

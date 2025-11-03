@@ -1,5 +1,6 @@
 package com.alvaroarmas.conecta4android
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -13,6 +14,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import android.widget.Button
 import android.widget.EditText
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat.startActivity
 import java.net.URI
 
@@ -27,6 +29,24 @@ class RegisterActivity : AppCompatActivity() {
                 context.startActivity(intent)
 
         }
+
+        fun goViewClients(context: Context) {
+            val intent = Intent(context, ViewClients::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+            context.startActivity(intent)
+        }
+
+        fun showNameNotAvlb(activity: Activity) {
+            activity.runOnUiThread {
+                AlertDialog.Builder(activity)
+                    .setTitle("That name is not available!")
+                    .setPositiveButton("Accept") { _, _ ->
+
+                    }
+                    .show()
+            }
+            WebSocketManager.disconnect()
+        }
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,6 +58,8 @@ class RegisterActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
+        WebSocketManager.registerActivity = this
+
 
         // button = findViewById<Button>(R.id.connect_button)
     }
@@ -74,9 +96,9 @@ class RegisterActivity : AppCompatActivity() {
             WebSocketManager.send("register", "hi")
             Log.d("CONNECTION", "Register message sent")
 
-            val intent = Intent(this, ViewClients::class.java)
+            //val intent = Intent(this, ViewClients::class.java)
             //intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
-            this.startActivity(intent)
+            //this.startActivity(intent)
         }
 
 
