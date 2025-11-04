@@ -38,7 +38,6 @@ class GameActivity : AppCompatActivity() {
         fun updateGrid() {
             Handler(Looper.getMainLooper()).post {
                 for(chip in grid) {
-
                     var parts = chip.replace("\"", "").replace("[", "").replace("]", "").split(" ")
                     // Log.d("PARTS", parts.toString())
                     var field = listFields[parts[0].toInt()][parts[1].toInt()]
@@ -58,6 +57,15 @@ class GameActivity : AppCompatActivity() {
                             .setPositiveButton("Accept") { _, _ ->
                                 val intent = Intent(activity, ViewClients::class.java)
                                 activity.startActivity(intent)
+                                WebSocketManager.sendAvailablePlayerMessage()
+
+                                // Resetting variables
+                                winner = "none"
+                                grid = mutableListOf<String>()
+                                listFields = ArrayList<ArrayList<Field>>()
+                                hasShownWinner = false
+                                curPlayer = 1
+                                player = 2
                             }
                             .show()
                     }
@@ -68,6 +76,15 @@ class GameActivity : AppCompatActivity() {
                             .setPositiveButton("Accept") { _, _ ->
                                 val intent = Intent(activity, ViewClients::class.java)
                                 activity.startActivity(intent)
+                                WebSocketManager.sendAvailablePlayerMessage()
+
+                                // Resetting variables
+                                winner = "none"
+                                grid = mutableListOf<String>()
+                                listFields = ArrayList<ArrayList<Field>>()
+                                hasShownWinner = false
+                                curPlayer = 1
+                                player = 2
                             }
                             .show()
                     }

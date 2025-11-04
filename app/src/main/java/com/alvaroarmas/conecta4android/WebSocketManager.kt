@@ -14,6 +14,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.*
+import kotlinx.serialization.json.put
 import org.java_websocket.client.WebSocketClient
 import org.java_websocket.handshake.ServerHandshake
 import org.json.JSONObject
@@ -176,8 +177,14 @@ object WebSocketManager {
                                         if (winner.toString().replace("\"", "") != "none") {
                                             GameActivity.showGameResult(gameActivity as Activity)
                                         }
+
                                         // Log.d("WINNER", GameActivity.winner)
 
+                                    }
+
+                                    if (type.equals("gameOutcome")) {
+                                        GameActivity.winner = jsonElement["winnerName"].toString()
+                                        GameActivity.showGameResult(gameActivity as Activity)
                                     }
 
 
@@ -221,6 +228,15 @@ object WebSocketManager {
             put("challenger", challenger)
         }
         webSocketClient?.send(Json.encodeToString(refusedMatchJson))
+    }
+
+    fun sendAvailablePlayerMessage() {
+        var jsonObject = buildJsonObject {
+            put("type", "avaliblePlayer")
+            put("clientName", username)
+        }
+        // CountdownActivity.name2 = challenged
+        webSocketClient?.send(Json.encodeToString(jsonObject))
     }
     fun sendAddChipMessage(col: Int) {
         send("kotlinAddChip", col.toString())
